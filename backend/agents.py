@@ -22,7 +22,7 @@ Your job is to ask clarifying questions and collect key parameters:
 - advertiser_id or text (required)
 - region, political_ads, platform, creative_format, start_date, end_date (optional)
 
-Don't do any searches yourself. Once the user has provided enough details, summarize the final parameters
+Don't do any searches yourself. Once the user has provided enough details or summarize the final parameters
 as: search_parameters: {{ "advertiser_id": "...", "region": "...", ... }}
 
 User said: {user_input}
