@@ -1,0 +1,123 @@
+.page-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f4f8fb;
+  }
+  
+  .app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #19747e;
+    color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  .nav-links a {
+    margin-left: 1.5rem;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .nav-links a:hover {
+    text-decoration: underline;
+  }
+  
+  .chat-container {
+    width: 70%;
+    max-width: 1100px;
+    margin: 2rem auto;
+    font-family: 'Segoe UI', sans-serif;
+    padding: 1.5rem;
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  }
+  
+  .chat-title {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #19747e;
+  }
+  
+  .chat-box {
+    background: #fefefe;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    height: 400px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+  }
+  
+  .chat-message {
+    margin: 0.5rem 0;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    max-width: 75%;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+  
+  .chat-message.user {
+    background-color: #d1e8e2;
+    align-self: flex-end;
+    margin-left: auto;
+    text-align: right;
+  }
+  
+  .chat-message.agent {
+    background-color: #a9d6e5;
+    align-self: flex-start;
+    margin-right: auto;
+    text-align: left;
+  }
+  
+  .chat-input-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .chat-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  
+  .chat-send-button {
+    padding: 0.75rem 1.5rem;
+    margin-left: 1rem;
+    background-color: #19747e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .chat-send-button:hover {
+    background-color: #145d63;
+  }
+  
+  .app-footer {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.875rem;
+    color: #666;
+    background: #f0f0f0;
+    margin-top: auto;
+  }
+  
