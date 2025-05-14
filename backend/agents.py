@@ -6,7 +6,7 @@ from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
-from backend.tools import SerpAPIAdsTool
+from tools import SerpAPIAdsTool
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
