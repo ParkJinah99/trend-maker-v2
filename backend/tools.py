@@ -1,58 +1,40 @@
-from langchain.tools import BaseTool
-from pydantic import BaseModel, Field
-from typing import Optional, Type
-import os
-import requests
+# bakcend/tools.py
+import os, requests
+from dotenv import load_dotenv
+from langchain.tools import tool
+from schemas import GoogleAdTransparencyParameters
 import json
 
+load_dotenv()
+@tool
+def serpapi_ad_search(params: GoogleAdTransparencyParameters) -> str:
+    """
+    Perform a Google Ads Transparency Center search using SerpAPI with the provided parameters and return the results.
+    """
+    api_key = os.getenv("SERPAPI_API_KEY")
+    base_url = "https://serpapi.com/search"
 
-class AdSearchParams(BaseModel):
-    advertiser_id: Optional[str] = Field(default=None, description="Advertiser ID or domain")
-    text: Optional[str] = Field(default=None, description="Search text or brand name")
-    region: Optional[str] = Field(default=None, description="Region code (e.g., US, KR)")
-    political_ads: Optional[bool] = Field(default=False, description="Only political ads?")
-    creative_format: Optional[str] = Field(default=None, description="Ad format (text, image, video)")
-    start_date: Optional[str] = Field(default=None, description="Start date (YYYYMMDD)")
-    end_date: Optional[str] = Field(default=None, description="End date (YYYYMMDD)")
-    platform: Optional[str] = Field(default=None, description="Platform (YOUTUBE, PLAY, MAPS, SEARCH, SHOPPING)")
+    with open("country_codes.json") as f:
+        COUNTRY_TO_CODE = {v: k for k, v in json.load(f).items()}
+    query_params = {
+        "api_key": api_key,
+        "engine": "google_ads_transparency_center",
+        **params.to_api_params(COUNTRY_TO_CODE)
+    }
 
+    response = requests.get(base_url, params=query_params)
+    if response.status_code != 200:
+        return f"SerpAPI error: {response.status_code} - {response.text}"
 
-class SerpAPIAdsTool(BaseTool):
-    name: str = "search_ads_transparency"
-    description: str = (
-        "Use this tool to fetch ads from the Google Ads Transparency Center using SerpAPI. "
-        "Accepts a JSON string with fields like advertiser_id or text, and optional fields like region, "
-        "platform, political_ads, start_date, end_date, and creative_format."
+    ads = response.json().get("ad_creatives", [])
+    if not ads:
+        return "No ads found."
+
+    return "\n\n".join(
+        f"**Ad #{i+1}**\n- Title: {ad.get('title', 'No title')}\n"
+        f"- Advertiser: {ad.get('advertiser_name', 'Unknown')}\n"
+        f"- Region: {ad.get('region', 'N/A')}\n"
+        f"- Platform: {ad.get('platform', 'N/A')}\n"
+        f"- Run Date: {ad.get('run_date', 'N/A')}"
+        for i, ad in enumerate(ads[:5])
     )
-    args_schema: Optional[Type[BaseModel]] = None  # Accepts raw JSON string
-
-    def _run(self, tool_input: str) -> str:
-        try:
-            params_dict = json.loads(tool_input)
-        except json.JSONDecodeError:
-            return "Invalid input: could not parse JSON string."
-
-        if not params_dict.get("advertiser_id") and not params_dict.get("text"):
-            return "Error: Either advertiser_id or text must be provided."
-
-        params = {
-            "engine": "google_ads_transparency_center",
-            "api_key": os.getenv("SERPAPI_API_KEY"),
-            **{k: v for k, v in params_dict.items() if v is not None}
-        }
-
-        response = requests.get("https://serpapi.com/search.json", params=params)
-        if response.status_code != 200:
-            return f"SerpAPI error: {response.text}"
-
-        ads = response.json().get("ad_creatives", [])[:5]
-        if not ads:
-            return "No ads found."
-
-        return "\n\n".join([
-            f"{ad.get('advertiser', 'Unknown')} - {ad.get('format')} - {ad.get('details_link')}"
-            for ad in ads
-        ])
-
-    def _arun(self, *args, **kwargs):
-        raise NotImplementedError("Async not supported")

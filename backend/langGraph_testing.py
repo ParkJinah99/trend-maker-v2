@@ -19,7 +19,7 @@ os.environ["LANGCHAIN_PROJECT"] = "AdSearchAssistant"
 load_dotenv()
 
 # --- Load Region Mapping ---
-with open("google-ads-transparency-center-regions.json") as f:
+with open(r"C:\Users\LeYo054\Documents\trend-maker-v2\backend\country_codes.json") as f:
     REGION_MAP = json.load(f)
     COUNTRY_TO_CODE = {v: k for k, v in REGION_MAP.items()}
 

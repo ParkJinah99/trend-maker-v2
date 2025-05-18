@@ -1,58 +1,46 @@
-import os
-import json
-from dotenv import load_dotenv
-from langchain.agents import initialize_agent, Tool, AgentType
-from langchain.chains import LLMChain
-from langchain.memory import ConversationBufferMemory
-from langchain.prompts import PromptTemplate
+# backend/agents.py
 from langchain_openai import ChatOpenAI
-from tools import SerpAPIAdsTool
+from tools import serpapi_ad_search
 
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
+llm = ChatOpenAI(temperature=0)
+tools = [serpapi_ad_search]
+llm_with_tools = llm.bind_tools(tools)
 
-llm = ChatOpenAI(temperature=0, openai_api_key=os.getenv("OPENAI_API_KEY"))
-search_tool = SerpAPIAdsTool()
-memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+chat_agent_template = """
+You are a helpful assistant designed to guide a user in forming a structured and well-defined ad search request using the Google Ads Transparency Center via SerpAPI.
 
-conversation_prompt = PromptTemplate(
-    input_variables=["user_input"],
-    template="""
-You are a helpful assistant designed to guide a user in forming a well-defined marketing ad search.
-Your job is to ask clarifying questions and collect key parameters:
-- advertiser_id or text (required)
-- region, political_ads, platform, creative_format, start_date, end_date (optional)
+Your goal is to collect the following parameters from the user:
 
-Don't do any searches yourself. Once the user has provided enough details or summarize the final parameters
-as: search_parameters: {{ "advertiser_id": "...", "region": "...", ... }}
+REQUIRED:
+- `advertiser_id` (a comma-separated list of advertiser IDs) OR
+- `text` (a search phrase)
 
-User said: {user_input}
+OPTIONAL:
+- `region` (country name, e.g., "Australia")
+- `platform` (one of: PLAY, MAPS, SEARCH, SHOPPING, YOUTUBE)
+- `political_ads` (true/false)
+- `start_date` (format: YYYYMMDD)
+- `end_date` (format: YYYYMMDD)
+- `creative_format` (text/image/video)
+- `num` (maximum number of results, default is 10)
+
+---
+
+INSTRUCTIONS:
+1. Ask the user for any missing required fields.
+2. Always begin your response by summarizing the parameters collected so far in JSON format.
+3. Validate values (e.g., correct date format, valid platform values).
+4. List the remaining optional fields available and ask if the user wants to include any of them.
+5. Once all necessary fields are collected, summarize them again as a JSON object using the correct parameter names.
+6. End with this exact message:
+   > "Shall I proceed to search with these parameters?"
+
+Only call the tool after the user replies "yes".
+
+If the user wants to update parameters, allow that before calling the tool.
 """
-)
 
-conversation_agent_chain = LLMChain(
-    llm=llm,
-    prompt=conversation_prompt,
-    memory=memory
-)
 
-search_agent = initialize_agent(
-    tools=[Tool(name=search_tool.name, func=search_tool.run, description=search_tool.description)],
-    llm=llm,
-    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-    memory=ConversationBufferMemory(memory_key="search_memory", return_messages=True),
-    verbose=True
-)
-
-def run_multi_agent(user_input: str) -> str:
-    response = conversation_agent_chain.run({"user_input": user_input})
-
-    if "search_parameters:" in response:
-        try:
-            json_str = response.split("search_parameters:")[-1].strip()
-            json_data = json.loads(json_str)
-            result = search_agent.run(json.dumps(json_data))
-            return f"\n📦 Search Summary:\n{result}"
-        except Exception as e:
-            return f"⚠️ Error running search: {str(e)}"
-
-    return response
+def get_llm_with_prompt(messages):
+    from langchain_core.messages import SystemMessage
+    return [SystemMessage(content=chat_agent_template)] + messages, llm_with_tools
