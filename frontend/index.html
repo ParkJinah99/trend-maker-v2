@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FastAPI Frontend</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+    }
+    #response img {
+      max-width: 300px;
+      margin-top: 1rem;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h2>Send API Request</h2>
+  <button type="button" onclick="sendRequest()">Send Request</button>
+  <div id="response"></div>
+
+  <script>
+    async function sendRequest() {
+      const responseDiv = document.getElementById("response");
+      responseDiv.innerHTML = "Loading...";
+
+      try {
+        const res = await fetch("http://localhost:8000/api/data");
+        if (!res.ok) throw new Error("Request failed: " + res.status);
+
+        const data = await res.json();
+        responseDiv.innerHTML = "";
+
+        // Display multiple text messages
+        if (Array.isArray(data.texts)) {
+          data.texts.forEach(text => {
+            const p = document.createElement("p");
+            p.textContent = text;
+            responseDiv.appendChild(p);
+          });
+        }
+
+        // Display Base64 images
+        if (Array.isArray(data.images_base64)) {
+          data.images_base64.forEach(base64 => {
+            const img = document.createElement("img");
+            img.src = `data:image/png;base64,${base64}`;
+            responseDiv.appendChild(img);
+          });
+        }
+
+        // Display image URLs
+        if (Array.isArray(data.image_urls)) {
+          data.image_urls.forEach(url => {
+            const img = document.createElement("img");
+            img.src = url;
+            responseDiv.appendChild(img);
+          });
+        }
+
+      } catch (err) {
+        responseDiv.innerHTML = "❌ " + err.message;
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
