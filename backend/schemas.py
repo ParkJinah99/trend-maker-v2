@@ -25,3 +25,19 @@ class GoogleAdTransparencyParameters(BaseModel):
         if "async_" in params:
             params["async"] = params.pop("async_")
         return params
+
+
+class NaverAdSearchParameters(BaseModel):
+    query: str = Field(..., description="Search query for Naver")
+    page: Optional[int] = Field(1)
+    where: Optional[str] = Field("nexearch")  # could be web, news, image, etc.
+    device: Optional[str] = Field("desktop")
+    output: Optional[str] = Field("json")
+    async_: Optional[bool] = Field(None, alias="async")
+    no_cache: Optional[bool] = Field(None)
+    zero_trace: Optional[bool] = Field(None)
+
+    def to_api_params(self):
+        params = self.model_dump(exclude_none=True, by_alias=True)
+        params["engine"] = "naver"
+        return params
