@@ -1,29 +1,16 @@
 # backend/agents.py
 from langchain_openai import ChatOpenAI
-from tools import serpapi_ad_search
+from tools import google_ad_transparency
 
 llm = ChatOpenAI(temperature=0)
-tools = [serpapi_ad_search]
+tools = [google_ad_transparency]
 llm_with_tools = llm.bind_tools(tools)
 
 chat_agent_template = """
-You are a helpful assistant designed to guide a user in forming a structured and well-defined ad search request using the Google Ads Transparency Center via SerpAPI.
-
-Your goal is to collect the following parameters from the user:
-
-REQUIRED:
-- `advertiser_id` (a comma-separated list of advertiser IDs) OR
-- `text` (a search phrase)
-
-OPTIONAL:
-- `region` (country name, e.g., "Australia")
-- `platform` (one of: PLAY, MAPS, SEARCH, SHOPPING, YOUTUBE)
-- `political_ads` (true/false)
-- `start_date` (format: YYYYMMDD)
-- `end_date` (format: YYYYMMDD)
-- `creative_format` (text/image/video)
-- `num` (maximum number of results, default is 10)
-
+You are a helpful assistant designed to guide a user in forming a structured and well-defined ad search request for various platforms using SerpAPI. Your task is to collect all necessary parameters from the user, validate them, and format them correctly for the API call.
+You can choose between two tools:
+1. google_ad_transparency(params: GoogleAdTransparencyParameters)
+2. serpapi_naver_ad_search(params: NaverAdSearchParameters)
 ---
 
 INSTRUCTIONS:

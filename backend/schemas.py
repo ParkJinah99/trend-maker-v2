@@ -41,3 +41,36 @@ class NaverAdSearchParameters(BaseModel):
         params = self.model_dump(exclude_none=True, by_alias=True)
         params["engine"] = "naver"
         return params
+
+
+class GoogleAdSearchParameters(BaseModel):
+    q: str = Field(..., description="Search keywords")
+    location: Optional[str] = Field(None)
+    language: Optional[str] = Field(None)
+    device: Optional[str] = Field(None)   # desktop | mobile | tablet
+    page: Optional[int] = Field(1)
+    num: Optional[int] = Field(10)
+    start: Optional[int] = Field(None)
+    safe: Optional[str] = Field(None)
+    async_: Optional[bool] = Field(None, alias="async")
+    no_cache: Optional[bool] = Field(None)
+    output: Optional[str] = Field("json")
+
+    def to_api_params(self):
+        p = self.model_dump(exclude_none=True, by_alias=True)
+        p["engine"] = "google"
+        return p
+
+class YouTubeAdSearchParameters(BaseModel):
+    search_query: str
+    hl: Optional[str] = None
+    gl: Optional[str] = None
+    num: Optional[int] = 20
+    async_: Optional[bool] = Field(None, alias="async")
+    no_cache: Optional[bool] = None
+    output: Optional[str] = "json"
+
+    def to_api_params(self):
+        p = self.model_dump(exclude_none=True, by_alias=True)
+        p["engine"] = "youtube"
+        return p

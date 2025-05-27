@@ -50,7 +50,7 @@ class GoogleAdTransparencyParameters(BaseModel):
 
 # --- Tool Function ---
 @tool
-def serpapi_ad_search(params: GoogleAdTransparencyParameters) -> str:
+def google_ad_transparency(params: GoogleAdTransparencyParameters) -> str:
     """
     Perform a Google Ads Transparency Center search using SerpAPI with the provided parameters.
     """
@@ -87,7 +87,7 @@ def serpapi_ad_search(params: GoogleAdTransparencyParameters) -> str:
 
 # --- LLM Setup ---
 llm = ChatOpenAI(temperature=0)
-tools = [serpapi_ad_search]
+tools = [google_ad_transparency]
 llm_with_tools = llm.bind_tools(tools)
 
 chat_agent_template = """
@@ -168,7 +168,7 @@ def confirm_tool_execution_node(state):
 def finalize_tool_run_node(state):
     tool_call = state["messages"][-1].tool_calls[0]
     tool_input = GoogleAdTransparencyParameters.model_validate(tool_call["args"])
-    tool_output = serpapi_ad_search.invoke({"params": tool_input})  # Pass wrapped for @tool
+    tool_output = google_ad_transparency.invoke({"params": tool_input})  # Pass wrapped for @tool
 
     return {
         "messages": [
